@@ -1,0 +1,16 @@
+[project]
+name = "amazone-clone"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.14"
+dependencies = [
+    "asyncpg>=0.31.0",
+    "authx>=1.5.2",
+    "fastapi[standard]>=0.136.0",
+    "passlib[argon2]>=1.7.4",
+    "psycopg[binary,standard]>=3.3.3",
+    "pwdlib>=0.3.0",
+    "pytest>=9.0.3",
+    "sqlalchemy>=2.0.49",
+]
