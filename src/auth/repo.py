@@ -1,6 +1,6 @@
 from .schemas import AddUserSchema
 from .models import UsersOrm
-from sqlalchemy import insert, select
+from sqlalchemy import insert, select, update
 
 class UsersRepository:
     def __init__(self, session):

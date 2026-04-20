@@ -1,5 +1,8 @@
 from src.db.database import Base
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+
+from src.products.models import ProductsOrm
+
 
 class UsersOrm(Base):
     __tablename__ = "users"
@@ -12,3 +15,5 @@ class UsersOrm(Base):
     last_name: Mapped[str] = mapped_column(nullable=True)
     in_club: Mapped[bool] = mapped_column(nullable=False)
     is_entrepreneur: Mapped[bool] = mapped_column(nullable=False)
+
+    created_products: Mapped[list["ProductsOrm"]] = relationship(back_populates="created_by")

@@ -13,3 +13,4 @@ async def get_auth_service(repo = Depends(get_users_repository), jwt_service = D
 
 async def get_current_user(service = Depends(get_auth_service), token_payload = Depends(get_token_payload)):
     return await service.get_current_user(token_payload)
+
