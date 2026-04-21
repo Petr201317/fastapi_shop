@@ -1,8 +1,7 @@
 from fastapi import APIRouter, Depends
-from .depends import get_products_service
+from .depends import get_products_service, get_product_by_id
 from .schemas import CreateProductFormSchema
 from src.auth.depends import get_current_user
-import uuid
 from .service import ProductsService
 
 
@@ -20,9 +19,9 @@ async def create_product(
 
 @router.get("/{product_id}")
 async def get_product(
-    product_id: uuid.UUID, service: ProductsService = Depends(get_products_service)
+    product = Depends(get_product_by_id),
 ):
-    return await service.get_product_by_id(product_id)
+    return product
 
 
 @router.get("/")

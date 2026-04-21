@@ -9,7 +9,7 @@ class ProductsRepository:
     def __init__(self, session: AsyncSession):
         self.session = session
 
-    async def _get_product_or_404(self, product_id: uuid.UUID) -> ProductsOrm | None:
+    async def _get_product_or_404(self, product_id: int) -> ProductsOrm | None:
         stmt = await self.session.execute(
             select(ProductsOrm).where(ProductsOrm.id == product_id)
         )

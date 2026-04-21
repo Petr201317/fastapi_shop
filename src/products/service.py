@@ -34,13 +34,7 @@ class ProductsService:
     async def get_all_products(self, limit: int, offset: int):
         return await self.repo.list_products(limit=limit, offset=offset)
 
-    async def get_product_by_id(self, product_id: uuid.UUID) -> ProductsOrm | None:
+    async def get_product_by_id(self, product_id: int) -> ProductsOrm | None:
         product = await self.repo._get_product_or_404(product_id)
-
-        if product is None:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Product with ID {product_id} not found",
-            )
 
         return product
