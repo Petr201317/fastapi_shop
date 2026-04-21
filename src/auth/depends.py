@@ -1,4 +1,4 @@
-from fastapi import Depends, Request
+from fastapi import Depends, HTTPException
 from src.db.database import get_async_session
 from .repo import UsersRepository
 from .services import AuthService
@@ -12,5 +12,8 @@ async def get_auth_service(repo = Depends(get_users_repository), jwt_service = D
     return AuthService(repo, jwt_service)
 
 async def get_current_user(service = Depends(get_auth_service), token_payload = Depends(get_token_payload)):
-    return await service.get_current_user(token_payload)
+    if not token_payload:
+        raise HTTPException(status_code=401, detail="User not authorized")
+    else:
+        return await service.get_current_user(token_payload)
 

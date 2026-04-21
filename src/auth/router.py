@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Response, status
+from fastapi import APIRouter, Depends, Response, HTTPException
 from src.auth.schemas import UserRegFormSchema, UserLoginFormSchema
 from .depends import get_auth_service, get_current_user
 from src.auth.services import AuthService
@@ -21,13 +21,11 @@ async def login(
     auth_service: AuthService = Depends(get_auth_service),
 ):
     tokens = await auth_service.login_user(credentials)
-    response.set_cookie(
-        key=security_settings.JWT_ACCESS_COOKIE_NAME, value=tokens.access_token
-    )
-    response.set_cookie(
-        key=security_settings.JWT_REFRESH_COOKIE_NAME, value=tokens.refresh_token
-    )
-    return tokens
+    if tokens:
+        response.set_cookie(key=security_settings.JWT_ACCESS_COOKIE_NAME, value=tokens.access_token)
+        response.set_cookie(key=security_settings.JWT_REFRESH_COOKIE_NAME, value=tokens.refresh_token)
+    else:
+        raise HTTPException(status_code=401)
 
 
 @router.get("/me")
