@@ -1,4 +1,4 @@
-from fastapi import Depends
+from fastapi import Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.db.database import get_async_session
@@ -11,3 +11,9 @@ def get_products_repository(session: AsyncSession = Depends(get_async_session)):
 
 def get_products_service(repository: ProductsRepository = Depends(get_products_repository)):
     return ProductsService(repository)
+
+async def get_product_by_id(product_id: int, service: ProductsService = Depends(get_products_service)):
+    res = await service.get_product_by_id(product_id)
+    if not res:
+        raise HTTPException(status_code=404)
+    return res

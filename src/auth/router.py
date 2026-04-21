@@ -6,18 +6,19 @@ from src.core.security import security_settings
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
-@router.post("/reg")
+
+@router.post("/reg", status_code=status.HTTP_201_CREATED)
 async def reg(
-        credentials: UserRegFormSchema,
-        service: AuthService = Depends(get_auth_service)
+    credentials: UserRegFormSchema, service: AuthService = Depends(get_auth_service)
 ):
     return await service.reg_user(credentials)
 
+
 @router.post("/login")
 async def login(
-        response: Response,
-        credentials: UserLoginFormSchema,
-        auth_service: AuthService = Depends(get_auth_service),
+    response: Response,
+    credentials: UserLoginFormSchema,
+    auth_service: AuthService = Depends(get_auth_service),
 ):
     tokens = await auth_service.login_user(credentials)
     if tokens:
@@ -26,8 +27,7 @@ async def login(
     else:
         raise HTTPException(status_code=401)
 
+
 @router.get("/me")
-async def me(
-        current_user = Depends(get_current_user)
-):
+async def me(current_user=Depends(get_current_user)):
     return current_user
