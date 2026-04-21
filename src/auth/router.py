@@ -7,7 +7,9 @@ from src.core.security import security_settings
 router = APIRouter(prefix="/auth", tags=["auth"])
 
 
-@router.post("/reg", status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/reg",
+)
 async def reg(
     credentials: UserRegFormSchema, service: AuthService = Depends(get_auth_service)
 ):
@@ -22,8 +24,12 @@ async def login(
 ):
     tokens = await auth_service.login_user(credentials)
     if tokens:
-        response.set_cookie(key=security_settings.JWT_ACCESS_COOKIE_NAME, value=tokens.access_token)
-        response.set_cookie(key=security_settings.JWT_REFRESH_COOKIE_NAME, value=tokens.refresh_token)
+        response.set_cookie(
+            key=security_settings.JWT_ACCESS_COOKIE_NAME, value=tokens.access_token
+        )
+        response.set_cookie(
+            key=security_settings.JWT_REFRESH_COOKIE_NAME, value=tokens.refresh_token
+        )
     else:
         raise HTTPException(status_code=401)
 

@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from .depends import get_products_service, get_product_by_id
 from .schemas import CreateProductFormSchema
 from src.auth.depends import get_current_user
@@ -9,7 +9,11 @@ router = APIRouter(prefix="/products", tags=["products"])
 
 
 @router.post("/create")
-async def create_product(credentials: CreateProductFormSchema, current_user = Depends(get_current_user), service = Depends(get_products_service)):
+async def create_product(
+    credentials: CreateProductFormSchema,
+    current_user=Depends(get_current_user),
+    service=Depends(get_products_service),
+):
     res = await service.add_product(credentials, current_user)
     if not res:
         raise HTTPException(status_code=401)
@@ -17,10 +21,9 @@ async def create_product(credentials: CreateProductFormSchema, current_user = De
         return res
 
 
-
 @router.get("/{product_id}")
 async def get_product(
-    product = Depends(get_product_by_id),
+    product=Depends(get_product_by_id),
 ):
     return product
 
