@@ -13,7 +13,9 @@ class SecuritySettings(BaseSettings):
     JWT_REFRESH_COOKIE_NAME: str = "refresh_token"
     HASH_SCHEME: str = "argon2"
 
-    model_config = SettingsConfigDict(env_file=Path(__file__).parent / ".env", env_file_encoding="utf-8")
+    model_config = SettingsConfigDict(
+        env_file=".env", env_file_encoding="utf-8", extra="ignore"
+    )
 
 
-security_settings = SecuritySettings()
+security_settings = SecuritySettings()  # type: ignore

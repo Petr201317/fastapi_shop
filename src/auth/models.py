@@ -1,7 +1,11 @@
+from __future__ import annotations
+from typing import TYPE_CHECKING
+
 from src.db.database import Base
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from src.products.models import ProductsOrm
+if TYPE_CHECKING:
+    from src.products.models import ProductsOrm
 
 
 class UsersOrm(Base):
@@ -16,4 +20,6 @@ class UsersOrm(Base):
     in_club: Mapped[bool] = mapped_column(nullable=False)
     is_entrepreneur: Mapped[bool] = mapped_column(nullable=False)
 
-    created_products: Mapped[list["ProductsOrm"]] = relationship(back_populates="created_by")
+    created_products: Mapped[list["ProductsOrm"]] = relationship(
+        back_populates="created_by"
+    )

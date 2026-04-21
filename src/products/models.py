@@ -1,9 +1,14 @@
+from __future__ import annotations
+from typing import TYPE_CHECKING
 import datetime
 
 from sqlalchemy import ForeignKey
 
 from src.db.database import Base
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+
+if TYPE_CHECKING:
+    from src.auth.models import UsersOrm
 
 
 class ProductsOrm(Base):
@@ -20,4 +25,3 @@ class ProductsOrm(Base):
     created_by: Mapped["UsersOrm"] = relationship(back_populates="created_products")
 
     created_at: Mapped[datetime.datetime] = mapped_column(default=datetime.datetime.now)
-
