@@ -5,6 +5,7 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.14"
 dependencies = [
+    "alembic>=1.18.4",
     "asyncpg>=0.31.0",
     "authx>=1.5.2",
     "fastapi[standard]>=0.136.0",
