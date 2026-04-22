@@ -1,4 +1,5 @@
-from pydantic import BaseModel, Field, HttpUrl, field_validator
+from pydantic import BaseModel, Field, HttpUrl, field_validator, ConfigDict
+from decimal import Decimal
 
 
 class CreateProductFormSchema(BaseModel):
@@ -24,3 +25,12 @@ class CreateProductDbSchema(BaseModel):
     @classmethod
     def convert_url(cls, v):
         return str(v) if isinstance(v, HttpUrl) else v
+
+
+class ProductRead(BaseModel):
+    name: str
+    description: str
+    price: Decimal
+    image_url: HttpUrl | str
+
+    model_config = ConfigDict(from_attributes=True)
