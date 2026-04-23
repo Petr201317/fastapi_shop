@@ -88,6 +88,5 @@ def downgrade() -> None:
     op.drop_table('cart_items')
     op.drop_index(op.f('ix_orders_status'), table_name='orders')
     op.drop_table('orders')
-    op.drop_column("orders", "status")
-    op.execute("DROP TYPE order_status")
+    op.execute("DROP TYPE IF EXISTS order_status CASCADE;")
     # ### end Alembic commands ###
