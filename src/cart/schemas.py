@@ -13,10 +13,8 @@ class CartItemUpdate(BaseModel):
 class CartItemRead(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
-    id: uuid.UUID
-    product_id: uuid.UUID
+    product_id: int
     quantity: int
-    product: ProductRead
 
 
 class CartItemAdd(BaseModel):

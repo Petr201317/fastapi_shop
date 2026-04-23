@@ -20,7 +20,7 @@ class CartItemsOrm(Base):
         UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
     )
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
-    product_id: Mapped[uuid.UUID] = mapped_column(
+    product_id: Mapped[int] = mapped_column(
         ForeignKey("products.id", ondelete="CASCADE")
     )
 

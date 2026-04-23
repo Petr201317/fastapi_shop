@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends
 from .schemas import CartItemAdd
-from .depends import get_cart_service
+from .depends import get_cart_service, get_user_cart
 from src.jwt.depends import get_token_payload
 
 router = APIRouter(prefix="/cart", tags=["cart"])
@@ -14,3 +14,6 @@ async def add_product_in_cart(
     return await service.add_product_in_cart(credentials=credentials, user_payload=user_payload)
 
 
+@router.get("/cart", tags=["cart"])
+async def get_cart(user_cart = Depends(get_user_cart)):
+    return user_cart
