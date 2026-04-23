@@ -32,4 +32,7 @@ class CartItemsOrm(Base):
 
     # Relationships
     product: Mapped["ProductsOrm"] = relationship()
-    user: Mapped["UsersOrm"] = relationship(back_populates="cart_items")
+    user: Mapped["UsersOrm"] = relationship(
+        "UsersOrm",
+        back_populates="cart_items"
+    )

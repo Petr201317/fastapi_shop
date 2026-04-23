@@ -17,3 +17,17 @@ class CartItemRead(BaseModel):
     product_id: uuid.UUID
     quantity: int
     product: ProductRead
+
+
+class CartItemAdd(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    product_id: int
+    quantity: int = Field(..., gt=0, le=99)
+
+class CartItemAddDb(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    product_id: int
+    quantity: int
+    user_id: int

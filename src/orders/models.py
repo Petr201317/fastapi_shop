@@ -28,11 +28,11 @@ class OrdersOrm(Base):
     id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
     )
-    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="PROTECT"))
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
     total_price: Mapped[Decimal] = mapped_column(Numeric(12, 2), default=0.00)
     status: Mapped[OrderStatus] = mapped_column(
         SAEnum(OrderStatus, name="order_status"),
-        server_default=OrderStatus.PENDING,
+        server_default="PENDING",
         nullable=False,
         index=True,
     )

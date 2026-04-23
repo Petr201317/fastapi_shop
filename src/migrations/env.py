@@ -3,10 +3,7 @@ from logging.config import fileConfig
 from sqlalchemy import engine_from_config
 from sqlalchemy import pool
 from src.db.config import db_settings
-from src.auth.models import UsersOrm
-from src.jwt.models import RefreshTokensOrm
-from src.products.models import ProductsOrm
-from src.db.database import Base
+from src.db import Base  # All models are imported in src/db/__init__.py
 
 
 from alembic import context

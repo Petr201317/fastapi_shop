@@ -14,7 +14,7 @@ class UsersRepository:
         )
         result = await self.session.execute(stmt)
         await self.session.commit()
-        return result.scalar_one_or_none()
+        return result.scalar()
 
     async def get_user_by_email(self, email: str) -> UsersOrm | None:
         query = (
