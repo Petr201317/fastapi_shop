@@ -1,6 +1,6 @@
-from pydantic import BaseModel, Field, HttpUrl, field_validator, ConfigDict
+from pydantic import BaseModel, Field, HttpUrl, field_validator
 from decimal import Decimal
-
+import uuid
 
 class CreateProductFormSchema(BaseModel):
     name: str = Field(max_length=150, min_length=5)
@@ -9,12 +9,10 @@ class CreateProductFormSchema(BaseModel):
     image_url: HttpUrl | str = Field(
         default="https://img.freepik.com/free-vector/isometric-postal-parcels-mails_33099-720.jpg?semt=ais_hybrid&w=740&q=80"
     )
-
-
 class CreateProductDbSchema(BaseModel):
     name: str = Field(max_length=150, min_length=5)
     description: str = Field(max_length=1300, min_length=15)
-    price: float = Field(default=0)
+    price: Decimal = Field(default=0)
     image_url: str
 
     created_by_id: int
@@ -25,12 +23,10 @@ class CreateProductDbSchema(BaseModel):
     @classmethod
     def convert_url(cls, v):
         return str(v) if isinstance(v, HttpUrl) else v
-
-
 class ProductRead(BaseModel):
     name: str
     description: str
     price: Decimal
     image_url: HttpUrl | str
 
-    model_config = ConfigDict(from_attributes=True)
+    model_config = {"from_attributes": True}

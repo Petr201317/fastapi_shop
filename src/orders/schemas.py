@@ -4,25 +4,17 @@ from decimal import Decimal
 from typing import List
 from datetime import datetime
 from .models import OrderStatus
-
-
 class OrderItemCreate(BaseModel):
-    product_id: uuid.UUID
+    product_id: int
     quantity: int = Field(default=1, gt=0)
-
-
 class OrderItemRead(BaseModel):
-    product_id: uuid.UUID
+    product_id: int
     quantity: int
     price_at_purchase: Decimal
 
     model_config = ConfigDict(from_attributes=True)
-
-
 class OrderCreate(BaseModel):
     items: List[OrderItemCreate]
-
-
 class OrderRead(BaseModel):
     id: uuid.UUID
     user_id: int

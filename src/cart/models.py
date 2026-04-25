@@ -5,22 +5,21 @@ from ..db.database import Base
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.dialects.postgresql import UUID
 import uuid
-from sqlalchemy import ForeignKey, func
+from sqlalchemy import ForeignKey, Integer, func
 from datetime import datetime
 
 if TYPE_CHECKING:
     from ..products.models import ProductsOrm
     from ..auth.models import UsersOrm
-
-
 class CartItemsOrm(Base):
     __tablename__ = "cart_items"
 
     id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
     )
-    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
+    user_id: Mapped[int] = mapped_column(Integer, ForeignKey("users.id", ondelete="CASCADE"))
     product_id: Mapped[int] = mapped_column(
+        Integer,
         ForeignKey("products.id", ondelete="CASCADE")
     )
 
@@ -31,7 +30,7 @@ class CartItemsOrm(Base):
     )
 
     # Relationships
-    product: Mapped["ProductsOrm"] = relationship()
+    product: Mapped["ProductsOrm"] = relationship(back_populates="cart_items")
     user: Mapped["UsersOrm"] = relationship(
         "UsersOrm",
         back_populates="cart_items"
