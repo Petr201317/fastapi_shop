@@ -3,6 +3,7 @@ from src.auth.schemas import UserRegFormSchema, UserLoginFormSchema
 from .depends import get_auth_service, get_current_user
 from src.auth.services import AuthService
 from src.core.security import security_settings
+from ..jwt.depends import get_token_payload, get_refresh_token_payload
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -37,3 +38,10 @@ async def login(
 @router.get("/me")
 async def me(current_user=Depends(get_current_user)):
     return current_user
+
+@router.get("/refresh_access_token")
+async def refresh_access_token(response: Response, payload = Depends(get_refresh_token_payload), service: AuthService = Depends(get_auth_service)):
+    new_token = await service.new_access_token(payload)
+    response.set_cookie(
+        key=security_settings.JWT_ACCESS_COOKIE_NAME, value=new_token
+    )

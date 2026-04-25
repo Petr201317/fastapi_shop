@@ -51,8 +51,17 @@ class AuthService:
             return None
 
 
-
-
+    async def new_access_token(self, payload):
+        user = await self.users_repo.get_user_by_id(user_id=int(payload.sub))
+        if user:
+            access_token_data = AccessTokenDataSchema(
+                in_club=user.in_club,
+                is_entrepreneur=user.is_entrepreneur
+            )
+            access_token = await self.jwt_service.create_access_token(data=access_token_data, user_id=user.id)
+            return access_token
+        else:
+            return None
 
 
 

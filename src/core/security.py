@@ -30,7 +30,7 @@ def generate_refresh_token(user_id: int) -> str:
 def generate_access_token(data: AccessTokenDataSchema, user_id: int) -> str:
     return jwt_authx.create_access_token(data=data.model_dump(), uid=str(user_id), expiry=datetime.timedelta(minutes=security_settings.JWT_ACCESS_EXPIRATION_DELTA))
 
-def verify_access_token(token: RequestToken) -> AccessTokenDataSchema:
+def verify_token(token: RequestToken) -> AccessTokenDataSchema:
     return jwt_authx.verify_token(token=token, verify_csrf=False, verify_type=False)
 
 
