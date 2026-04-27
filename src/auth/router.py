@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Response, HTTPException
+from fastapi import APIRouter, Depends, Response, HTTPException, status
 from src.auth.schemas import UserRegFormSchema, UserLoginFormSchema
 from .depends import get_auth_service, get_current_user
 from src.auth.services import AuthService
@@ -14,7 +14,8 @@ router = APIRouter(prefix="/auth", tags=["auth"])
 async def reg(
     credentials: UserRegFormSchema, service: AuthService = Depends(get_auth_service)
 ):
-    return await service.reg_user(credentials)
+    res = await service.reg_user(credentials)
+    return res if res else HTTPException(status_code=status.HTTP_409_CONFLICT)
 
 
 @router.post("/login")
@@ -45,3 +46,4 @@ async def refresh_access_token(response: Response, payload = Depends(get_refresh
     response.set_cookie(
         key=security_settings.JWT_ACCESS_COOKIE_NAME, value=new_token
     )
+

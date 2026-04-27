@@ -1,5 +1,6 @@
 from authx import TokenPayload
 from fastapi import Response
+from sqlalchemy.exc import IntegrityError
 
 from .schemas import UserRegFormSchema, AddUserSchema, UserLoginFormSchema, TokensSchema
 from .repo import UsersRepository
@@ -23,8 +24,10 @@ class AuthService:
             is_entrepreneur = user_credentials.is_entrepreneur,
             in_club = user_credentials.in_club
         )
-
-        user = await self.users_repo.add_user(user_db_data)
+        try:
+            user = await self.users_repo.add_user(user_db_data)
+        except IntegrityError:
+            return None
         return user
 
     async def login_user(self, user_credentials: UserLoginFormSchema):
