@@ -16,3 +16,8 @@ class OrdersService:
         )
         await self.repo.add_order(order_db_data)
         return True
+
+    async def get_orders_for_user(self, payload):
+        user_id = int(payload.sub)
+        res = await self.repo.get_orders_by_user_id(user_id)
+        return res

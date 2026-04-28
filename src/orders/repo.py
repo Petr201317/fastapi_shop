@@ -1,4 +1,4 @@
-from sqlalchemy import insert
+from sqlalchemy import insert, select
 from .models import OrdersOrm, OrderItemsOrm
 
 from src.orders.schemas import OrderCreateDb
@@ -22,4 +22,13 @@ class OrdersRepository:
         )
         self.session.add(order)
         await self.session.commit()
+
+    async def get_orders_by_user_id(self, user_id: int):
+        query = (
+            select(OrdersOrm)
+            .where(OrdersOrm.user_id == user_id)
+        )
+
+        res = await self.session.execute(query).scalars().all()
+        return res
 

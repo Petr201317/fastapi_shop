@@ -77,6 +77,9 @@ def upgrade() -> None:
         f"ALTER TABLE order_items ALTER COLUMN product_id TYPE INTEGER USING {int_from_uuid % 'product_id'}"
     )
 
+    op.execute("SET pg_trgm.similarity_threshold = 0.2;")
+    op.execute("CREATE EXTENSION IF NOT EXISTS pg_trgm;")
+
     # Recreate constraints
     op.create_foreign_key(
         op.f("products_created_by_id_fkey"),

@@ -8,6 +8,7 @@ dependencies = [
     "alembic>=1.18.4",
     "asyncpg>=0.31.0",
     "authx>=1.5.2",
+    "bcrypt>=5.0.0",
     "fastapi[standard]>=0.136.0",
     "passlib[argon2]>=1.7.4",
     "psycopg[binary,standard]>=3.3.3",

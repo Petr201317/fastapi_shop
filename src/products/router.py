@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
-from .depends import get_products_service, get_product_by_id
-from .schemas import CreateProductFormSchema
+from .depends import get_products_service, get_product_by_id, get_products_by_search
+from .schemas import CreateProductFormSchema, ProductRead
 from src.auth.depends import get_current_user
 from .service import ProductsService
 
@@ -35,3 +35,7 @@ async def list_products(
     service: ProductsService = Depends(get_products_service),
 ):
     return await service.get_all_products(limit, offset)
+
+@router.get("/search/{search_term}")
+async def search_product(search_result = Depends(get_products_by_search), response_model=list[ProductRead]):
+    return search_result
