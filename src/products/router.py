@@ -36,6 +36,6 @@ async def list_products(
 ):
     return await service.get_all_products(limit, offset)
 
-@router.get("/search/{search_term}")
-async def search_product(search_result = Depends(get_products_by_search), response_model=list[ProductRead]):
+@router.get("/search/{search_term}", response_model=list[ProductRead])
+async def search_product(search_result = Depends(get_products_by_search)):
     return search_result

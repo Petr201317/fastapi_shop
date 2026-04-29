@@ -3,7 +3,7 @@ import uuid
 from decimal import Decimal
 from typing import List
 from datetime import datetime
-from .models import OrderStatus, OrderItemsOrm
+from .models import OrderStatus
 class OrderItemCreate(BaseModel):
     product_id: int
     quantity: int = Field(default=1, gt=0)
@@ -15,7 +15,7 @@ class OrderItemRead(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 class OrderCreate(BaseModel):
     items: List[OrderItemCreate]
-    total_price: Decimal
+
 class OrderRead(BaseModel):
     id: uuid.UUID
     user_id: int
@@ -24,12 +24,19 @@ class OrderRead(BaseModel):
     items: List[OrderItemRead]
     created_at: datetime
 
-    model_config = ConfigDict(from_attributes=True)\
+    model_config = ConfigDict(from_attributes=True)
+
+class OrderItemCreateDb(BaseModel):
+    product_id: int
+    quantity: int
+    price_at_purchase: Decimal
 
 class OrderCreateDb(BaseModel):
     user_id: int
     total_price: Decimal
-    items: List[OrderItemCreate]
+    items: List[OrderItemCreateDb]
 
-
+class OrderUpdateStatus(BaseModel):
+    status: OrderStatus
+    order_id: int
 

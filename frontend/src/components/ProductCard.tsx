@@ -11,28 +11,28 @@ export function ProductCard({
   onAdd: () => void;
 }) {
   return (
-    <div className="card" style={{ gridColumn: "span 3" }}>
+    <div className="card">
       <button
         onClick={onOpen}
-        style={{ display: "block", width: "100%", padding: 0, border: 0, background: "transparent", cursor: "pointer" }}
+        style={{ display: "block", width: "100%", padding: 0, border: 0, background: "transparent", cursor: "pointer", textAlign: "left" }}
         aria-label={`Открыть ${product.name}`}
       >
         <img className="cardImg" src={product.image_url} alt={product.name} loading="lazy" />
       </button>
       <div className="cardBody">
-        <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 10 }}>
-          <div className="title" style={{ fontSize: 14, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+        <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 10, marginBottom: 8 }}>
+          <div className="title" style={{ fontSize: 16, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
             {product.name}
           </div>
           <div className="price">{formatPrice(product.price)}</div>
         </div>
-        <div className="muted2" style={{ marginTop: 8, fontSize: 12, lineHeight: 1.45, height: 34, overflow: "hidden" }}>
+        <div className="muted2" style={{ fontSize: 13, lineHeight: 1.45, height: 38, overflow: "hidden" }}>
           {product.description}
         </div>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, marginTop: 12 }}>
-          <span className="badge">ID {product.id}</span>
-          <button className="btn btnPrimary" onClick={onAdd}>
-            В корзину
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, marginTop: 14 }}>
+          <span className="badge">ID {product.id ?? "n/a"}</span>
+          <button className="button" onClick={onAdd}>
+            Add
           </button>
         </div>
       </div>
@@ -40,8 +40,9 @@ export function ProductCard({
   );
 }
 
-function formatPrice(v: number) {
-  const value = Number.isFinite(v) ? v : 0;
-  return new Intl.NumberFormat("ru-RU", { style: "currency", currency: "RUB", maximumFractionDigits: 0 }).format(value);
+function formatPrice(v: number | string) {
+  const parsed = Number(v);
+  const value = Number.isFinite(parsed) ? parsed : 0;
+  return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 2 }).format(value);
 }
 

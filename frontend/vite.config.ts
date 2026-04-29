@@ -10,7 +10,8 @@ export default defineConfig({
     proxy: {
       "/auth": backendTarget,
       "/products": backendTarget,
-      "/cart": backendTarget
+      "/cart": backendTarget,
+      "/orders": backendTarget
     }
   }
 });

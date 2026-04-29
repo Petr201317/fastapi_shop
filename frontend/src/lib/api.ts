@@ -1,4 +1,10 @@
-import type { CartItem, Product, User } from "./types";
+import type {
+  CartItem,
+  Order,
+  OrderCreatePayload,
+  Product,
+  User
+} from "./types";
 
 type HttpMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
 
@@ -110,6 +116,9 @@ export const api = {
       in_club?: boolean;
     }): Promise<User> {
       return request<User>("/auth/reg", { method: "POST", body: payload, retryOn401: false });
+    },
+    async refreshAccessToken(): Promise<void> {
+      await request<void>("/auth/refresh_access_token", { method: "GET", retryOn401: false });
     }
   },
   products: {
@@ -118,6 +127,12 @@ export const api = {
     },
     async byId(id: number): Promise<Product> {
       return request<Product>(`/products/${id}`, { method: "GET" });
+    },
+    async search(searchTerm: string, limit = 10): Promise<Product[]> {
+      return request<Product[]>(
+        `/products/search/${encodeURIComponent(searchTerm)}?limit=${limit}`,
+        { method: "GET" }
+      );
     },
     async create(payload: { name: string; description: string; price: number; image_url: string }): Promise<Product> {
       return request<Product>("/products/create", { method: "POST", body: payload });
@@ -129,6 +144,20 @@ export const api = {
     },
     async add(productId: number, quantity: number): Promise<unknown> {
       return request("/cart/add_product", { method: "POST", body: { product_id: productId, quantity } });
+    },
+    async remove(cartItemId: string): Promise<CartItem | null> {
+      return request<CartItem | null>(
+        `/cart/del_product?cart_item_id=${encodeURIComponent(cartItemId)}`,
+        { method: "POST" }
+      );
+    }
+  },
+  orders: {
+    async list(): Promise<Order[]> {
+      return request<Order[]>("/orders/", { method: "GET" });
+    },
+    async create(payload: OrderCreatePayload): Promise<boolean> {
+      return request<boolean>("/orders/create", { method: "POST", body: payload });
     }
   }
 };

@@ -11,12 +11,14 @@ import { LoginPage } from "./pages/LoginPage";
 import { RegisterPage } from "./pages/RegisterPage";
 import { AccountPage } from "./pages/AccountPage";
 import { CreateProductPage } from "./pages/CreateProductPage";
+import { OrdersPage } from "./pages/OrdersPage";
 
 function AppInner() {
   const [user, setUser] = useState<User | null>(null);
+  const [authReady, setAuthReady] = useState(false);
   const [cartCount, setCartCount] = useState(0);
   const [query, setQuery] = useState("");
-  const toast = useToast();
+  useToast();
 
   const syncMe = useCallback(async () => {
     try {
@@ -24,6 +26,8 @@ function AppInner() {
       setUser(me);
     } catch {
       setUser(null);
+    } finally {
+      setAuthReady(true);
     }
   }, []);
 
@@ -46,24 +50,32 @@ function AppInner() {
 
   return (
     <>
-      <Header user={shell.user} cartCount={shell.cartCount} query={shell.query} onQueryChange={setQuery} />
+      <Header
+        user={shell.user}
+        cartCount={shell.cartCount}
+        query={shell.query}
+        onQueryChange={setQuery}
+        onSessionRefresh={syncMe}
+      />
 
       <Routes>
         <Route path="/" element={<HomePage query={query} onCartChanged={syncCartCount} />} />
         <Route path="/product/:id" element={<ProductPage onCartChanged={syncCartCount} />} />
-        <Route path="/cart" element={<CartPage onCartChanged={syncCartCount} />} />
-        <Route path="/login" element={<LoginPage onLoggedIn={async () => { await syncMe(); await syncCartCount(); }} />} />
+        <Route
+          path="/cart"
+          element={<CartPage user={user} onCartChanged={syncCartCount} />}
+        />
+        <Route
+          path="/login"
+          element={<LoginPage onLoggedIn={async () => { await syncMe(); await syncCartCount(); }} />}
+        />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/account" element={<AccountPage user={user} />} />
+        <Route path="/orders" element={<OrdersPage user={user} />} />
         <Route path="/create" element={<CreateProductPage user={user} />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
-
-      <div className="container" style={{ paddingBottom: 44 }}>
-        <div className="muted2" style={{ fontSize: 12, marginTop: 18, textAlign: "center" }}>
-          UI demo • backend via proxy • cookies auth • если видишь 401 — сначала зайди, затем обнови страницу.
-        </div>
-      </div>
+      {!authReady ? <div className="loadingBar" /> : null}
     </>
   );
 }

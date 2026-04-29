@@ -49,11 +49,10 @@ class ProductsService:
     async def get_all_products(self, limit: int, offset: int):
         products = [ProductRead(
             price=i.price,
-            name=name,
+            name=i.name,
             description=i.description,
-            image_url=i.image_url,
-
-        ) for i in await self.repo.get_products(limit, offset)]
+            image_url=i.image_url
+        ) for i in await self.repo.list_products(limit, offset)]
         return products
 
     async def get_product_by_id(self, product_id: int) -> ProductRead | None:

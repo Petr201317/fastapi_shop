@@ -1,3 +1,5 @@
+import uuid
+
 from .schemas import CartItemAdd, CartItemAddDb, CartItemRead
 
 
@@ -24,3 +26,22 @@ class CartService:
                 quantity = cart_item_data.quantity
             ))
         return cart_items
+
+
+    # service
+    async def delete_product_in_cart(self, user_payload, cart_item_id: uuid.UUID):
+        user_id = int(user_payload.sub)
+        cart_item = await self.repo.get_user_by_cart_item_id(cart_item_id)
+
+        if cart_item is None:
+            return None
+
+        if cart_item.user_id == user_id:
+            deleted_product = await self.repo.delete_product_in_cart(cart_item_id)
+            return CartItemRead(
+                product_id=deleted_product.product_id,
+                quantity=deleted_product.quantity
+            )
+
+        return None
+

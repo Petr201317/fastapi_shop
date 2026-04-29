@@ -102,7 +102,11 @@ export function CreateProductPage({ user }: { user: User | null }) {
                   setLoading(true);
                   const p = await api.products.create(validation.payload);
                   toast.push({ kind: "ok", title: "Товар создан", message: p.name });
-                  nav(`/product/${p.id}`);
+                  if (p.id) {
+                    nav(`/product/${p.id}`);
+                  } else {
+                    nav("/");
+                  }
                 } catch (err) {
                   toast.push({
                     kind: "error",

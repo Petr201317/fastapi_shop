@@ -42,7 +42,6 @@ class ProductsRepository:
     async def search_products(
             self, search_term: str, limit: int = 10
     ):
-
         sim = func.similarity(ProductsOrm.name, search_term)
 
         stmt = (

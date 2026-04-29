@@ -16,10 +16,11 @@ export function ProductPage({ onCartChanged }: { onCartChanged: () => void }) {
     (async () => {
       try {
         setLoading(true);
+        if (!Number.isFinite(productId)) throw new Error("Invalid product id");
         const p = await api.products.byId(productId);
         if (!cancelled) setProduct(p);
       } catch (e) {
-        toast.push({ kind: "error", title: "Товар не найден", message: isApiError(e) ? e.message : "Ошибка сети" });
+        toast.push({ kind: "error", title: "Product not found", message: isApiError(e) ? e.message : "Network error" });
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -33,7 +34,7 @@ export function ProductPage({ onCartChanged }: { onCartChanged: () => void }) {
     return (
       <div className="page">
         <div className="container">
-          <div className="glass panelPad" style={{ height: 460 }} />
+          <div className="panel" style={{ height: 460 }} />
         </div>
       </div>
     );
@@ -43,11 +44,11 @@ export function ProductPage({ onCartChanged }: { onCartChanged: () => void }) {
     return (
       <div className="page">
         <div className="container">
-          <div className="glass panelPad">
-            <div className="title">Не удалось загрузить товар</div>
+          <div className="panel">
+            <div className="title">Unable to load product</div>
             <div className="muted" style={{ marginTop: 8 }}>
-              <Link className="btn" to="/">
-                На главную
+              <Link className="linkButton" to="/">
+                Back to catalog
               </Link>
             </div>
           </div>
@@ -59,12 +60,12 @@ export function ProductPage({ onCartChanged }: { onCartChanged: () => void }) {
   return (
     <div className="page">
       <div className="container">
-        <div className="twoCol">
+        <div className="layoutSplit">
           <div className="card">
             <img className="cardImg" style={{ height: 420 }} src={product.image_url} alt={product.name} />
           </div>
-          <div className="glass panelPad">
-            <div className="badge">Товар #{product.id}</div>
+          <div className="panel">
+            <div className="badge">Product #{product.id}</div>
             <div className="title" style={{ fontSize: 22, marginTop: 10 }}>
               {product.name}
             </div>
@@ -73,31 +74,32 @@ export function ProductPage({ onCartChanged }: { onCartChanged: () => void }) {
             </div>
             <div className="hr" />
             <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 12 }}>
-              <div className="muted">Цена</div>
+              <div className="muted">Price</div>
               <div className="price" style={{ fontSize: 26 }}>
                 {formatPrice(product.price)}
               </div>
             </div>
             <div style={{ display: "grid", gap: 10, marginTop: 14 }}>
               <button
-                className="btn btnPrimary"
+                className="button"
                 onClick={async () => {
                   try {
+                    if (!product.id) throw new Error("Product ID missing");
                     await api.cart.add(product.id, 1);
-                    toast.push({ kind: "ok", title: "Добавлено в корзину", message: product.name });
+                    toast.push({ kind: "ok", title: "Added to cart", message: product.name });
                     onCartChanged();
                   } catch (e) {
-                    toast.push({ kind: "error", title: "Не получилось добавить", message: isApiError(e) ? e.message : "Ошибка сети" });
+                    toast.push({ kind: "error", title: "Unable to add item", message: isApiError(e) ? e.message : "Network error" });
                   }
                 }}
               >
-                В корзину
+                Add to cart
               </button>
-              <Link className="btn" to="/cart">
-                Перейти в корзину
+              <Link className="linkButton" to="/cart">
+                Go to cart
               </Link>
-              <Link className="btn" to="/">
-                ← Продолжить покупки
+              <Link className="linkButton" to="/">
+                Continue shopping
               </Link>
             </div>
           </div>
@@ -107,8 +109,9 @@ export function ProductPage({ onCartChanged }: { onCartChanged: () => void }) {
   );
 }
 
-function formatPrice(v: number) {
-  const value = Number.isFinite(v) ? v : 0;
-  return new Intl.NumberFormat("ru-RU", { style: "currency", currency: "RUB", maximumFractionDigits: 0 }).format(value);
+function formatPrice(v: number | string) {
+  const parsed = Number(v);
+  const value = Number.isFinite(parsed) ? parsed : 0;
+  return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 2 }).format(value);
 }
 

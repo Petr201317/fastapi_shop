@@ -1,12 +1,14 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { api, isApiError } from "../lib/api";
-import type { CartItemHydrated } from "../lib/types";
+import type { CartItemHydrated, User } from "../lib/types";
 import { useToast } from "../components/Toast";
 
-export function CartPage({ onCartChanged }: { onCartChanged: () => void }) {
+export function CartPage({ user, onCartChanged }: { user: User | null; onCartChanged: () => void }) {
   const [items, setItems] = useState<CartItemHydrated[]>([]);
   const [loading, setLoading] = useState(true);
+  const [checkoutLoading, setCheckoutLoading] = useState(false);
+  const [cartItemIdToDelete, setCartItemIdToDelete] = useState("");
   const toast = useToast();
 
   useEffect(() => {
@@ -33,7 +35,7 @@ export function CartPage({ onCartChanged }: { onCartChanged: () => void }) {
           })
         );
       } catch (e) {
-        toast.push({ kind: "error", title: "Корзина недоступна", message: isApiError(e) ? e.message : "Нужна авторизация" });
+        toast.push({ kind: "error", title: "Cart is unavailable", message: isApiError(e) ? e.message : "Sign in required" });
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -44,19 +46,17 @@ export function CartPage({ onCartChanged }: { onCartChanged: () => void }) {
   }, [toast, onCartChanged]);
 
   const total = useMemo(() => {
-    return items.reduce((sum, x) => sum + (x.product?.price ?? 0) * x.quantity, 0);
+    return items.reduce((sum, x) => sum + (Number(x.product?.price ?? 0) || 0) * x.quantity, 0);
   }, [items]);
 
   return (
     <div className="page">
       <div className="container">
-        <div className="twoCol">
-          <div className="glass panelPad">
-            <div className="title" style={{ fontSize: 18 }}>
-              Корзина
-            </div>
+        <div className="layoutSplit">
+          <div className="panel">
+            <div className="title" style={{ fontSize: 18 }}>Cart</div>
             <div className="muted" style={{ marginTop: 8 }}>
-              {loading ? "Загрузка…" : `${items.length} позиций`}
+              {loading ? "Loading..." : `${items.length} positions`}
             </div>
             <div className="hr" />
 
@@ -77,18 +77,18 @@ export function CartPage({ onCartChanged }: { onCartChanged: () => void }) {
                     />
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div className="title" style={{ fontSize: 14, overflow: "hidden", whiteSpace: "nowrap", textOverflow: "ellipsis" }}>
-                        {x.product?.name ?? `Товар #${x.product_id}`}
+                        {x.product?.name ?? `Product #${x.product_id}`}
                       </div>
                       <div className="muted2" style={{ marginTop: 6, fontSize: 12 }}>
-                        Кол-во: <b style={{ color: "rgba(255,255,255,0.85)" }}>{x.quantity}</b>
+                        Quantity: <b style={{ color: "var(--text-strong)" }}>{x.quantity}</b>
                       </div>
                       <div className="muted2" style={{ marginTop: 6, fontSize: 12 }}>
-                        Цена: <b style={{ color: "rgba(255,255,255,0.85)" }}>{formatPrice(x.product?.price ?? 0)}</b>
+                        Price: <b style={{ color: "var(--text-strong)" }}>{formatPrice(x.product?.price ?? 0)}</b>
                       </div>
                     </div>
                     <div style={{ display: "grid", gap: 8, alignContent: "start" }}>
-                      <Link className="btn" to={`/product/${x.product_id}`}>
-                        Открыть
+                      <Link className="linkButton" to={`/product/${x.product_id}`}>
+                        View
                       </Link>
                     </div>
                   </div>
@@ -96,32 +96,72 @@ export function CartPage({ onCartChanged }: { onCartChanged: () => void }) {
               </div>
             ) : (
               <div className="muted">
-                Пусто. <Link className="btn" to="/">Вернуться к товарам</Link>
+                Empty cart. <Link className="linkButton" to="/">Back to catalog</Link>
               </div>
             )}
           </div>
 
-          <div className="glass panelPad">
-            <div className="title">Итого</div>
+          <div className="panel">
+            <div className="title">Checkout</div>
             <div className="muted" style={{ marginTop: 8 }}>
-              Сумма по товарам (по данным /products).
+              Creates order with `POST /orders/create`.
             </div>
             <div className="hr" />
             <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 12 }}>
-              <div className="muted">К оплате</div>
+              <div className="muted">Total</div>
               <div className="price" style={{ fontSize: 24 }}>
                 {formatPrice(total)}
               </div>
             </div>
             <div style={{ display: "grid", gap: 10, marginTop: 14 }}>
-              <button className="btn btnPrimary" disabled style={{ opacity: 0.6, cursor: "not-allowed" }}>
-                Оформить заказ (скоро)
+              <button
+                className="button"
+                disabled={!user || !items.length || checkoutLoading}
+                onClick={async () => {
+                  try {
+                    setCheckoutLoading(true);
+                    await api.orders.create({
+                      items: items.map((x) => ({ product_id: x.product_id, quantity: x.quantity }))
+                    });
+                    toast.push({ kind: "ok", title: "Order created" });
+                  } catch (e) {
+                    toast.push({ kind: "error", title: "Checkout failed", message: isApiError(e) ? e.message : "Network error" });
+                  } finally {
+                    setCheckoutLoading(false);
+                  }
+                }}
+              >
+                {checkoutLoading ? "Creating..." : "Create order"}
               </button>
-              <Link className="btn" to="/">
-                Продолжить покупки
+              <Link className="linkButton" to="/orders">
+                Open orders
               </Link>
+              <div className="hr" />
+              <div className="title" style={{ fontSize: 14 }}>Delete cart item by UUID</div>
+              <input
+                className="input"
+                value={cartItemIdToDelete}
+                onChange={(e) => setCartItemIdToDelete(e.target.value)}
+                placeholder="cart_item_id UUID"
+              />
+              <button
+                className="linkButton"
+                onClick={async () => {
+                  try {
+                    await api.cart.remove(cartItemIdToDelete.trim());
+                    toast.push({ kind: "ok", title: "Delete request sent" });
+                    const refreshed = await api.cart.get();
+                    setItems(refreshed.map((x) => ({ ...x, product: null })));
+                    onCartChanged();
+                  } catch (e) {
+                    toast.push({ kind: "error", title: "Delete failed", message: isApiError(e) ? e.message : "Network error" });
+                  }
+                }}
+              >
+                Delete by UUID
+              </button>
               <div className="muted2" style={{ fontSize: 12, lineHeight: 1.45 }}>
-                В бэке пока нет эндпоинта для оформления заказа в `src/api.py`, поэтому тут заглушка.
+                API requires `cart_item_id` for `/cart/del_product`, so this control calls it directly.
               </div>
             </div>
           </div>
@@ -131,8 +171,9 @@ export function CartPage({ onCartChanged }: { onCartChanged: () => void }) {
   );
 }
 
-function formatPrice(v: number) {
-  const value = Number.isFinite(v) ? v : 0;
-  return new Intl.NumberFormat("ru-RU", { style: "currency", currency: "RUB", maximumFractionDigits: 0 }).format(value);
+function formatPrice(v: number | string) {
+  const parsed = Number(v);
+  const value = Number.isFinite(parsed) ? parsed : 0;
+  return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 2 }).format(value);
 }
 

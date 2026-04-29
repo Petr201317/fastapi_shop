@@ -5,7 +5,8 @@ import uuid
 from src.db.database import Base
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy import Integer
+from sqlalchemy import Integer, Numeric, text
+from decimal import Decimal
 
 if TYPE_CHECKING:
     from src.products.models import ProductsOrm
@@ -21,6 +22,9 @@ class UsersOrm(Base):
     last_name: Mapped[str] = mapped_column(nullable=True)
     in_club: Mapped[bool] = mapped_column(nullable=False)
     is_entrepreneur: Mapped[bool] = mapped_column(nullable=False)
+    balance: Mapped[Decimal] = mapped_column(
+        Numeric(10, 2), nullable=False, default=Decimal("0.00"), server_default=text("0.00")
+    )
 
     # relations
     created_products: Mapped[list["ProductsOrm"]] = relationship(

@@ -47,3 +47,4 @@ async def refresh_access_token(response: Response, payload = Depends(get_refresh
         key=security_settings.JWT_ACCESS_COOKIE_NAME, value=new_token
     )
 
+

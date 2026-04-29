@@ -5,8 +5,6 @@ import type { Product } from "../lib/types";
 import { ProductCard } from "../components/ProductCard";
 import { useToast } from "../components/Toast";
 
-const pills = ["Все", "Новинки", "Для дома", "Электроника", "Красота", "Спорт"];
-
 export function HomePage({
   query,
   onCartChanged
@@ -16,7 +14,7 @@ export function HomePage({
 }) {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activePill, setActivePill] = useState(pills[0]);
+  const [searchMode, setSearchMode] = useState(false);
   const toast = useToast();
   const nav = useNavigate();
 
@@ -25,10 +23,12 @@ export function HomePage({
     (async () => {
       try {
         setLoading(true);
-        const list = await api.products.list(48, 0);
+        const cleanQuery = query.trim();
+        const list = cleanQuery ? await api.products.search(cleanQuery, 24) : await api.products.list(24, 0);
         if (!cancelled) setProducts(list);
+        if (!cancelled) setSearchMode(Boolean(cleanQuery));
       } catch (e) {
-        toast.push({ kind: "error", title: "Не удалось загрузить товары", message: isApiError(e) ? e.message : "Ошибка сети" });
+        toast.push({ kind: "error", title: "Failed to load products", message: isApiError(e) ? e.message : "Network error" });
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -36,85 +36,61 @@ export function HomePage({
     return () => {
       cancelled = true;
     };
-  }, [toast]);
+  }, [toast, query]);
 
   const filtered = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    if (!q) return products;
-    return products.filter((p) => `${p.name} ${p.description}`.toLowerCase().includes(q));
-  }, [products, query]);
+    return products.filter((p) => p.name && p.description);
+  }, [products]);
 
   return (
     <div className="page">
       <div className="container">
-        <div className="glass hero">
-          <div>
-            <h1>Покупай как на настоящем маркетплейсе</h1>
-            <p>
-              Этот фронтенд использует твой бэкенд: товары, корзина, login и refresh access через cookies.
-              Приятный UI, быстрый поиск, карточки и реальные маршруты API.
-            </p>
-            <div className="hr" />
-            <div className="kpiRow">
-              <div className="kpi">
-                <b>Супер‑быстрый</b>
-                <span>Vite + React + proxy на FastAPI</span>
-              </div>
-              <div className="kpi">
-                <b>Cookies‑auth</b>
-                <span>credentials: include + refresh retry</span>
-              </div>
-              <div className="kpi">
-                <b>Реальные API</b>
-                <span>/auth /products /cart</span>
-              </div>
-            </div>
+        <section className="heroPanel">
+          <h1>Catalog</h1>
+          <p>Professional storefront UI connected directly to your existing API.</p>
+          <div className="metaLine">
+            <span>{loading ? "Loading..." : `${filtered.length} products`}</span>
+            <span>{searchMode ? "Server search: /products/search/{search_term}" : "List: /products"}</span>
           </div>
-          <div className="heroArt" />
-        </div>
+        </section>
 
-        <div className="pillRow" style={{ marginTop: 14 }}>
-          {pills.map((p) => (
-            <button
-              key={p}
-              className={`pill ${p === activePill ? "pillActive" : ""}`}
-              onClick={() => setActivePill(p)}
-            >
-              {p}
-            </button>
-          ))}
-          <span className="badge" style={{ marginLeft: "auto" }}>
-            {loading ? "Загрузка…" : `${filtered.length} товаров`}
-          </span>
-        </div>
-
-        <div style={{ marginTop: 14 }} className="grid gridProducts">
+        <div className="productsGrid">
           {loading ? (
-            Array.from({ length: 12 }).map((_, i) => (
-              <div key={i} className="card" style={{ gridColumn: "span 3", height: 320, opacity: 0.7 }} />
+            Array.from({ length: 8 }).map((_, i) => (
+              <div key={i} className="card cardSkeleton" />
             ))
           ) : filtered.length ? (
             filtered.map((p) => (
               <ProductCard
-                key={p.id}
+                key={`${p.id ?? p.name}-${p.price}`}
                 product={p}
-                onOpen={() => nav(`/product/${p.id}`)}
+                onOpen={() => {
+                  if (!p.id) {
+                    toast.push({ kind: "error", title: "Product details are unavailable for this item" });
+                    return;
+                  }
+                  nav(`/product/${p.id}`);
+                }}
                 onAdd={async () => {
                   try {
+                    if (!p.id) {
+                      toast.push({ kind: "error", title: "Product ID missing in response" });
+                      return;
+                    }
                     await api.cart.add(p.id, 1);
-                    toast.push({ kind: "ok", title: "Добавлено в корзину", message: p.name });
+                    toast.push({ kind: "ok", title: "Added to cart", message: p.name });
                     onCartChanged();
                   } catch (e) {
-                    toast.push({ kind: "error", title: "Не получилось добавить", message: isApiError(e) ? e.message : "Ошибка сети" });
+                    toast.push({ kind: "error", title: "Add to cart failed", message: isApiError(e) ? e.message : "Network error" });
                   }
                 }}
               />
             ))
           ) : (
-            <div className="glass panelPad" style={{ gridColumn: "1 / -1" }}>
-              <div className="title">Ничего не найдено</div>
+            <div className="panel">
+              <div className="title">No products found</div>
               <div className="muted" style={{ marginTop: 8 }}>
-                Попробуй изменить запрос поиска.
+                Try changing the search query.
               </div>
             </div>
           )}

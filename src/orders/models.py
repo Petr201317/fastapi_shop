@@ -15,9 +15,9 @@ if TYPE_CHECKING:
     from ..products.models import ProductsOrm
 class OrderStatus(str, Enum):
     PENDING = "pending"
-    PAID = "paid"
     SHIPPED = "shipped"
     CANCELLED = "cancelled"
+
 class OrdersOrm(Base):
     __tablename__ = "orders"
 
@@ -25,7 +25,7 @@ class OrdersOrm(Base):
         UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
     )
     user_id: Mapped[int] = mapped_column(Integer, ForeignKey("users.id", ondelete="RESTRICT"))
-    total_price: Mapped[Decimal] = mapped_column(Numeric(12, 2), default=0.00)
+    total_price: Mapped[Decimal] = mapped_column(default=0.00)
     status: Mapped[OrderStatus] = mapped_column(
         SAEnum(OrderStatus, name="order_status"),
         server_default=OrderStatus.PENDING,
@@ -47,7 +47,10 @@ class OrderItemsOrm(Base):
     product_id: Mapped[int | None] = mapped_column(
         Integer, ForeignKey("products.id", ondelete="SET NULL"), nullable=True
     )
+
     quantity: Mapped[int] = mapped_column(default=1)
+    price_at_purchase: Mapped[Decimal] = mapped_column(Numeric(10, 2), nullable=False)
+
 
     # relations
     order: Mapped["OrdersOrm"] = relationship(back_populates="items")
