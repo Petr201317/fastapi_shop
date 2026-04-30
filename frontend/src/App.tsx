@@ -55,7 +55,6 @@ function AppInner() {
         cartCount={shell.cartCount}
         query={shell.query}
         onQueryChange={setQuery}
-        onSessionRefresh={syncMe}
       />
 
       <Routes>

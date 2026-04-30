@@ -11,6 +11,7 @@ import src.cart.models  # noqa: F401
 import src.jwt.models  # noqa: F401
 import src.orders.models  # noqa: F401
 import src.products.models  # noqa: F401
+import src.payments.models # noqa: F401
 
 
 from alembic import context

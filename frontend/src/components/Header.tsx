@@ -1,24 +1,18 @@
 import React from "react";
 import { Link, NavLink } from "react-router-dom";
 import type { User } from "../lib/types";
-import { api } from "../lib/api";
-import { useToast } from "./Toast";
 
 export function Header({
   user,
   cartCount,
   query,
-  onQueryChange,
-  onSessionRefresh
+  onQueryChange
 }: {
   user: User | null;
   cartCount: number;
   query: string;
   onQueryChange: (v: string) => void;
-  onSessionRefresh: () => Promise<void>;
 }) {
-  const toast = useToast();
-
   return (
     <header className="siteHeader">
       <div className="container">
@@ -49,21 +43,6 @@ export function Header({
                 New product
               </NavLink>
             ) : null}
-            <button
-              className="linkButton"
-              type="button"
-              onClick={async () => {
-                try {
-                  await api.auth.refreshAccessToken();
-                  await onSessionRefresh();
-                  toast.push({ kind: "ok", title: "Session refreshed" });
-                } catch {
-                  toast.push({ kind: "error", title: "Refresh failed" });
-                }
-              }}
-            >
-              Refresh token
-            </button>
           </nav>
         </div>
       </div>

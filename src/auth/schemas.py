@@ -32,3 +32,6 @@ class UserLoginResponseSchema(BaseModel):
 class TokensSchema(BaseModel):
     access_token: str
     refresh_token: str
+
+class TopUpUserBalance(BaseModel):
+    amount: int

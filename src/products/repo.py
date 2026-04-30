@@ -1,6 +1,7 @@
 from sqlalchemy import insert, select, update, desc, text, func, Float
 from .schemas import CreateProductDbSchema
 from .models import ProductsOrm
+from src.auth.models import UsersOrm
 import uuid
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -55,3 +56,12 @@ class ProductsRepository:
 
         res = await self.session.execute(stmt)
         return res.scalars().all()
+
+    async def get_user_by_product_id(self, product_id: int) -> UsersOrm | None:
+        product = await self._get_product_or_404(product_id)
+        query = (
+            select(UsersOrm)
+            .where(UsersOrm.id == product.created_by_id)
+        )
+        res = await self.session.execute(query)
+        return res.scalar_one_or_none()

@@ -1,9 +1,11 @@
 from decimal import Decimal
+import uuid
 
 from sqlalchemy import select, update
 from .models import OrdersOrm, OrderItemsOrm
 from src.products.models import ProductsOrm
 from src.auth.models import UsersOrm
+from src.payments.models import PaymentsOrm, PaymentStatus
 
 from src.orders.schemas import OrderCreateDb
 
@@ -35,7 +37,18 @@ class OrdersRepository:
             .returning(UsersOrm.id)
         )
         result = await self.session.execute(stmt)
-        return result.scalar_one_or_none() is not None
+        debited_user_id = result.scalar_one_or_none()
+        if debited_user_id is not None:
+            self.session.add(
+                PaymentsOrm(
+                    id=uuid.uuid4(),
+                    status=PaymentStatus.DEBIT,
+                    user_id=user_id,
+                    amount=amount,
+                )
+            )
+            return True
+        return False
 
     async def commit(self):
         await self.session.commit()

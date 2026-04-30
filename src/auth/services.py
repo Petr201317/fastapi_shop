@@ -2,7 +2,7 @@ from authx import TokenPayload
 from fastapi import Response
 from sqlalchemy.exc import IntegrityError
 
-from .schemas import UserRegFormSchema, AddUserSchema, UserLoginFormSchema, TokensSchema
+from .schemas import UserRegFormSchema, AddUserSchema, UserLoginFormSchema, TokensSchema, TopUpUserBalance
 from .repo import UsersRepository
 from src.core.security import hash_password, verify_password
 from src.jwt.service import JWTService
@@ -65,6 +65,16 @@ class AuthService:
             return access_token
         else:
             return None
+
+    async def top_up_user_balance(self, payload: TokenPayload, credentials: TopUpUserBalance):
+        user_id = int(payload.sub)
+        new_balance = await self.users_repo.top_up_balance(user_id=user_id, amount=credentials.amount)
+        if new_balance:
+            return new_balance
+        else:
+            return None
+
+
 
 
 

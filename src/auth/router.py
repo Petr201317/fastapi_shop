@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, Response, HTTPException, status
-from src.auth.schemas import UserRegFormSchema, UserLoginFormSchema
+from src.auth.schemas import UserRegFormSchema, UserLoginFormSchema, TopUpUserBalance
 from .depends import get_auth_service, get_current_user
 from src.auth.services import AuthService
 from src.core.security import security_settings
@@ -47,4 +47,7 @@ async def refresh_access_token(response: Response, payload = Depends(get_refresh
         key=security_settings.JWT_ACCESS_COOKIE_NAME, value=new_token
     )
 
+@router.post("/top_up")
+async def top_up(credentials: TopUpUserBalance, payload = Depends(get_token_payload), service = Depends(get_auth_service)):
+    return await service.top_up_user_balance(payload=payload, credentials=credentials)
 

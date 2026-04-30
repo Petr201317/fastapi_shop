@@ -12,6 +12,7 @@ if TYPE_CHECKING:
     from src.products.models import ProductsOrm
     from src.cart.models import CartItemsOrm
     from src.orders.models import OrdersOrm
+    from src.payments.models import PaymentsOrm
 class UsersOrm(Base):
     __tablename__ = "users"
 
@@ -25,6 +26,7 @@ class UsersOrm(Base):
     balance: Mapped[Decimal] = mapped_column(
         Numeric(10, 2), nullable=False, default=Decimal("0.00"), server_default=text("0.00")
     )
+    payments: Mapped[List["PaymentsOrm"]] = relationship(back_populates="user")
 
     # relations
     created_products: Mapped[list["ProductsOrm"]] = relationship(
