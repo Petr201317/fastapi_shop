@@ -1,17 +1,23 @@
-import React from "react";
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
+import { api, isApiError } from "../lib/api";
+import { useToast } from "../components/Toast";
 import type { User } from "../lib/types";
 
-export function AccountPage({ user }: { user: User | null }) {
+export function AccountPage({ user, onUserChanged }: { user: User | null; onUserChanged: () => Promise<void> }) {
+  const [topUpAmount, setTopUpAmount] = useState<number>(1000);
+  const [topUpLoading, setTopUpLoading] = useState(false);
+  const toast = useToast();
+
   return (
     <div className="page">
       <div className="container">
         <div className="glass panelPad">
           <div className="title" style={{ fontSize: 18 }}>
-            Аккаунт
+            Account
           </div>
           <div className="muted" style={{ marginTop: 8 }}>
-            {user ? "Данные получены через /auth/me." : "Ты не авторизован."}
+            {user ? "Data loaded from /auth/me." : "You are not signed in."}
           </div>
           <div className="hr" />
 
@@ -27,7 +33,7 @@ export function AccountPage({ user }: { user: User | null }) {
               </div>
               <div className="card" style={{ padding: 14 }}>
                 <div className="muted2" style={{ fontSize: 12 }}>
-                  Пользователь
+                  User
                 </div>
                 <div className="title" style={{ marginTop: 6 }}>
                   {user.first_name} {user.last_name ?? ""}
@@ -38,7 +44,7 @@ export function AccountPage({ user }: { user: User | null }) {
               </div>
               <div className="card" style={{ padding: 14 }}>
                 <div className="muted2" style={{ fontSize: 12 }}>
-                  Статусы
+                  Status
                 </div>
                 <div style={{ marginTop: 8, display: "flex", gap: 8, flexWrap: "wrap" }}>
                   <span className="badge">{user.in_club ? "Club member" : "No club"}</span>
@@ -47,27 +53,75 @@ export function AccountPage({ user }: { user: User | null }) {
               </div>
               <div className="card" style={{ padding: 14 }}>
                 <div className="muted2" style={{ fontSize: 12 }}>
-                  Действия
+                  Balance
+                </div>
+                <div className="title" style={{ marginTop: 6 }}>
+                  {new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 2 }).format(Number(user.balance ?? 0) || 0)}
+                </div>
+                <div className="muted2" style={{ marginTop: 8, fontSize: 12 }}>
+                  Top up via `POST /auth/top_up`
+                </div>
+                <div style={{ marginTop: 10, display: "grid", gap: 8, gridTemplateColumns: "1fr auto" }}>
+                  <input
+                    className="input"
+                    type="number"
+                    min={1}
+                    step={1}
+                    value={topUpAmount}
+                    onChange={(e) => setTopUpAmount(Number(e.target.value))}
+                    placeholder="Amount"
+                  />
+                  <button
+                    className="btn btnPrimary"
+                    disabled={topUpLoading || !Number.isFinite(topUpAmount) || topUpAmount <= 0}
+                    onClick={async () => {
+                      try {
+                        setTopUpLoading(true);
+                        const newBalance = await api.auth.topUp(topUpAmount);
+                        await onUserChanged();
+                        toast.push({
+                          kind: "ok",
+                          title: "Balance topped up",
+                          message: `New balance: ${new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 2 }).format(Number(newBalance) || 0)}`
+                        });
+                      } catch (err) {
+                        toast.push({
+                          kind: "error",
+                          title: "Top up failed",
+                          message: isApiError(err) ? err.message : "Network error"
+                        });
+                      } finally {
+                        setTopUpLoading(false);
+                      }
+                    }}
+                  >
+                    {topUpLoading ? "Topping up..." : "Top up"}
+                  </button>
+                </div>
+              </div>
+              <div className="card" style={{ padding: 14 }}>
+                <div className="muted2" style={{ fontSize: 12 }}>
+                  Actions
                 </div>
                 <div style={{ marginTop: 10, display: "flex", gap: 10, flexWrap: "wrap" }}>
                   <Link className="btn" to="/cart">
-                    Открыть корзину
+                    Open cart
                   </Link>
                   {user.is_entrepreneur ? (
                     <Link className="btn btnPrimary" to="/create">
-                      Добавить товар
+                      Add product
                     </Link>
                   ) : null}
                 </div>
                 <div className="muted2" style={{ marginTop: 10, fontSize: 12, lineHeight: 1.45 }}>
-                  Logout эндпоинта нет — чтобы “выйти”, нужно удалить cookies в браузере.
+                  There is no logout endpoint. To sign out, clear browser cookies.
                 </div>
               </div>
             </div>
           ) : (
             <div className="muted">
               <Link className="btn btnPrimary" to="/login">
-                Войти
+                Sign in
               </Link>
             </div>
           )}

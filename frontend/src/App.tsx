@@ -69,7 +69,7 @@ function AppInner() {
           element={<LoginPage onLoggedIn={async () => { await syncMe(); await syncCartCount(); }} />}
         />
         <Route path="/register" element={<RegisterPage />} />
-        <Route path="/account" element={<AccountPage user={user} />} />
+        <Route path="/account" element={<AccountPage user={user} onUserChanged={syncMe} />} />
         <Route path="/orders" element={<OrdersPage user={user} />} />
         <Route path="/create" element={<CreateProductPage user={user} />} />
         <Route path="*" element={<Navigate to="/" replace />} />

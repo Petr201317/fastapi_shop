@@ -24,6 +24,7 @@ class CreateProductDbSchema(BaseModel):
     def convert_url(cls, v):
         return str(v) if isinstance(v, HttpUrl) else v
 class ProductRead(BaseModel):
+    id: int
     name: str
     description: str
     price: Decimal

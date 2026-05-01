@@ -38,6 +38,11 @@ export function Header({
             <NavLink className="linkButton" to={user ? "/account" : "/login"}>
               {user ? "Account" : "Sign in"}
             </NavLink>
+            {user ? (
+              <span className="badge">
+                Balance: {new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 2 }).format(Number(user.balance ?? 0) || 0)}
+              </span>
+            ) : null}
             {user?.is_entrepreneur ? (
               <NavLink className="button" to="/create">
                 New product

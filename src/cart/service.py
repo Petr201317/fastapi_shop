@@ -22,6 +22,7 @@ class CartService:
         cart_items = []
         for cart_item_data in cart_items_data:
             cart_items.append(CartItemRead(
+                id=cart_item_data.id,
                 product_id = cart_item_data.product_id,
                 quantity = cart_item_data.quantity
             ))
@@ -39,6 +40,7 @@ class CartService:
         if cart_item.user_id == user_id:
             deleted_product = await self.repo.delete_product_in_cart(cart_item_id)
             return CartItemRead(
+                id=deleted_product.id,
                 product_id=deleted_product.product_id,
                 quantity=deleted_product.quantity
             )

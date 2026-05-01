@@ -15,7 +15,7 @@ export function ProductCard({
       <button
         onClick={onOpen}
         style={{ display: "block", width: "100%", padding: 0, border: 0, background: "transparent", cursor: "pointer", textAlign: "left" }}
-        aria-label={`Открыть ${product.name}`}
+        aria-label={`Open ${product.name}`}
       >
         <img className="cardImg" src={product.image_url} alt={product.name} loading="lazy" />
       </button>

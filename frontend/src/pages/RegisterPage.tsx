@@ -19,10 +19,10 @@ export function RegisterPage() {
       <div className="container">
         <div className="glass panelPad" style={{ maxWidth: 560, margin: "0 auto" }}>
           <div className="title" style={{ fontSize: 20 }}>
-            Регистрация
+            Register
           </div>
           <div className="muted" style={{ marginTop: 8 }}>
-            После регистрации можно войти и пользоваться корзиной.
+            After registration, you can sign in and use your cart.
           </div>
           <div className="hr" />
 
@@ -39,10 +39,10 @@ export function RegisterPage() {
                   is_entrepreneur: entrepreneur,
                   in_club: inClub
                 });
-                toast.push({ kind: "ok", title: "Аккаунт создан", message: "Теперь войди" });
+                toast.push({ kind: "ok", title: "Account created", message: "Now sign in" });
                 nav("/login");
               } catch (err) {
-                toast.push({ kind: "error", title: "Не удалось зарегистрироваться", message: isApiError(err) ? err.message : "Ошибка сети" });
+                toast.push({ kind: "error", title: "Registration failed", message: isApiError(err) ? err.message : "Network error" });
               } finally {
                 setLoading(false);
               }
@@ -57,41 +57,41 @@ export function RegisterPage() {
             </label>
             <label style={{ display: "grid", gap: 8 }}>
               <span className="muted2" style={{ fontSize: 12 }}>
-                Пароль
+                Password
               </span>
-              <input className="input" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Минимум 6 символов" />
+              <input className="input" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="At least 6 characters" />
             </label>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
               <label style={{ display: "grid", gap: 8 }}>
                 <span className="muted2" style={{ fontSize: 12 }}>
-                  Имя
+                  First name
                 </span>
-                <input className="input" value={firstName} onChange={(e) => setFirstName(e.target.value)} placeholder="Иван" />
+                <input className="input" value={firstName} onChange={(e) => setFirstName(e.target.value)} placeholder="John" />
               </label>
               <label style={{ display: "grid", gap: 8 }}>
                 <span className="muted2" style={{ fontSize: 12 }}>
-                  Фамилия
+                  Last name
                 </span>
-                <input className="input" value={lastName} onChange={(e) => setLastName(e.target.value)} placeholder="Иванов" />
+                <input className="input" value={lastName} onChange={(e) => setLastName(e.target.value)} placeholder="Doe" />
               </label>
             </div>
 
             <label className="badge" style={{ justifyContent: "space-between" }}>
-              <span>Я предприниматель</span>
+              <span>I am an entrepreneur</span>
               <input type="checkbox" checked={entrepreneur} onChange={(e) => setEntrepreneur(e.target.checked)} />
             </label>
             <label className="badge" style={{ justifyContent: "space-between" }}>
-              <span>Я в клубе</span>
+              <span>I am in the club</span>
               <input type="checkbox" checked={inClub} onChange={(e) => setInClub(e.target.checked)} />
             </label>
 
             <button className="btn btnPrimary" disabled={loading} type="submit">
-              {loading ? "Создаём…" : "Создать аккаунт"}
+              {loading ? "Creating..." : "Create account"}
             </button>
           </form>
 
           <div className="muted" style={{ marginTop: 14 }}>
-            Уже есть аккаунт? <Link className="btn" to="/login">Войти</Link>
+            Already have an account? <Link className="btn" to="/login">Sign in</Link>
           </div>
         </div>
       </div>

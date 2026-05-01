@@ -15,10 +15,10 @@ export function LoginPage({ onLoggedIn }: { onLoggedIn: () => Promise<void> }) {
       <div className="container">
         <div className="glass panelPad" style={{ maxWidth: 560, margin: "0 auto" }}>
           <div className="title" style={{ fontSize: 20 }}>
-            Вход
+            Sign in
           </div>
           <div className="muted" style={{ marginTop: 8 }}>
-            Бэкенд ставит cookies на `/auth/login`. Мы работаем через `credentials: include`.
+            Backend sets cookies on `/auth/login`. We use `credentials: include`.
           </div>
           <div className="hr" />
 
@@ -29,10 +29,10 @@ export function LoginPage({ onLoggedIn }: { onLoggedIn: () => Promise<void> }) {
                 setLoading(true);
                 await api.auth.login(email.trim(), password);
                 await onLoggedIn();
-                toast.push({ kind: "ok", title: "Готово", message: "Ты вошёл в аккаунт" });
+                toast.push({ kind: "ok", title: "Done", message: "You are signed in" });
                 nav("/");
               } catch (err) {
-                toast.push({ kind: "error", title: "Не удалось войти", message: isApiError(err) ? err.message : "Ошибка сети" });
+                toast.push({ kind: "error", title: "Sign in failed", message: isApiError(err) ? err.message : "Network error" });
               } finally {
                 setLoading(false);
               }
@@ -47,17 +47,17 @@ export function LoginPage({ onLoggedIn }: { onLoggedIn: () => Promise<void> }) {
             </label>
             <label style={{ display: "grid", gap: 8 }}>
               <span className="muted2" style={{ fontSize: 12 }}>
-                Пароль
+                Password
               </span>
               <input className="input" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" />
             </label>
             <button className="btn btnPrimary" disabled={loading} type="submit">
-              {loading ? "Входим…" : "Войти"}
+              {loading ? "Signing in..." : "Sign in"}
             </button>
           </form>
 
           <div className="muted" style={{ marginTop: 14 }}>
-            Нет аккаунта? <Link className="btn" to="/register">Регистрация</Link>
+            No account yet? <Link className="btn" to="/register">Register</Link>
           </div>
         </div>
       </div>

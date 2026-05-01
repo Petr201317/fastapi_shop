@@ -38,6 +38,7 @@ class ProductsService:
         products = await self.repo.search_products(search_term, limit)
         products_read = (
             [ProductRead(
+                id=i.id,
                 image_url=i.image_url,
                 name=i.name,
                 description=i.description,
@@ -48,6 +49,7 @@ class ProductsService:
 
     async def get_all_products(self, limit: int, offset: int):
         products = [ProductRead(
+            id=i.id,
             price=i.price,
             name=i.name,
             description=i.description,
@@ -58,6 +60,7 @@ class ProductsService:
     async def get_product_by_id(self, product_id: int) -> ProductRead | None:
         product = await self.repo._get_product_or_404(product_id)
         read_product = ProductRead(
+            id=product.id,
             name=product.name,
             description=product.description,
             price=product.price,

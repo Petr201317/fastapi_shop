@@ -8,7 +8,7 @@ export function CartPage({ user, onCartChanged }: { user: User | null; onCartCha
   const [items, setItems] = useState<CartItemHydrated[]>([]);
   const [loading, setLoading] = useState(true);
   const [checkoutLoading, setCheckoutLoading] = useState(false);
-  const [cartItemIdToDelete, setCartItemIdToDelete] = useState("");
+  const [deletingId, setDeletingId] = useState<string | null>(null);
   const toast = useToast();
 
   useEffect(() => {
@@ -27,7 +27,7 @@ export function CartPage({ user, onCartChanged }: { user: User | null; onCartCha
             try {
               const p = await api.products.byId(x.product_id);
               if (!cancelled) {
-                setItems((prev) => prev.map((i) => (i.product_id === x.product_id ? { ...i, product: p } : i)));
+                setItems((prev) => prev.map((i) => (i.id === x.id ? { ...i, product: p } : i)));
               }
             } catch {
               // ignore per-item
@@ -69,7 +69,7 @@ export function CartPage({ user, onCartChanged }: { user: User | null; onCartCha
             ) : items.length ? (
               <div className="grid" style={{ gap: 12 }}>
                 {items.map((x) => (
-                  <div key={x.product_id} className="card" style={{ display: "flex", gap: 12, padding: 12 }}>
+                  <div key={x.id} className="card" style={{ display: "flex", gap: 12, padding: 12 }}>
                     <img
                       src={x.product?.image_url ?? "https://picsum.photos/seed/placeholder/200/200"}
                       alt={x.product?.name ?? `Product ${x.product_id}`}
@@ -90,6 +90,28 @@ export function CartPage({ user, onCartChanged }: { user: User | null; onCartCha
                       <Link className="linkButton" to={`/product/${x.product_id}`}>
                         View
                       </Link>
+                      <button
+                        className="linkButton"
+                        disabled={deletingId === x.id || !x.id}
+                        onClick={async () => {
+                          try {
+                            if (!x.id) {
+                              throw new Error("Missing cart item id");
+                            }
+                            setDeletingId(x.id);
+                            await api.cart.remove(x.id);
+                            setItems((prev) => prev.filter((i) => i.id !== x.id));
+                            onCartChanged();
+                            toast.push({ kind: "ok", title: "Item removed" });
+                          } catch (e) {
+                            toast.push({ kind: "error", title: "Delete failed", message: isApiError(e) ? e.message : "Network error" });
+                          } finally {
+                            setDeletingId(null);
+                          }
+                        }}
+                      >
+                        {deletingId === x.id ? "Removing..." : "Remove"}
+                      </button>
                     </div>
                   </div>
                 ))}
@@ -136,33 +158,6 @@ export function CartPage({ user, onCartChanged }: { user: User | null; onCartCha
               <Link className="linkButton" to="/orders">
                 Open orders
               </Link>
-              <div className="hr" />
-              <div className="title" style={{ fontSize: 14 }}>Delete cart item by UUID</div>
-              <input
-                className="input"
-                value={cartItemIdToDelete}
-                onChange={(e) => setCartItemIdToDelete(e.target.value)}
-                placeholder="cart_item_id UUID"
-              />
-              <button
-                className="linkButton"
-                onClick={async () => {
-                  try {
-                    await api.cart.remove(cartItemIdToDelete.trim());
-                    toast.push({ kind: "ok", title: "Delete request sent" });
-                    const refreshed = await api.cart.get();
-                    setItems(refreshed.map((x) => ({ ...x, product: null })));
-                    onCartChanged();
-                  } catch (e) {
-                    toast.push({ kind: "error", title: "Delete failed", message: isApiError(e) ? e.message : "Network error" });
-                  }
-                }}
-              >
-                Delete by UUID
-              </button>
-              <div className="muted2" style={{ fontSize: 12, lineHeight: 1.45 }}>
-                API requires `cart_item_id` for `/cart/del_product`, so this control calls it directly.
-              </div>
             </div>
           </div>
         </div>

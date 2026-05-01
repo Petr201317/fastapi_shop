@@ -19,14 +19,14 @@ export function CreateProductPage({ user }: { user: User | null }) {
     const trimmedUrl = imageUrl.trim();
 
     const issues: string[] = [];
-    if (trimmedName.length < 5) issues.push("Название минимум 5 символов");
-    if (trimmedDescription.length < 15) issues.push("Описание минимум 15 символов");
-    if (!Number.isFinite(price) || price <= 0) issues.push("Цена должна быть > 0");
+    if (trimmedName.length < 5) issues.push("Name must be at least 5 characters");
+    if (trimmedDescription.length < 15) issues.push("Description must be at least 15 characters");
+    if (!Number.isFinite(price) || price <= 0) issues.push("Price must be greater than 0");
     try {
       // eslint-disable-next-line no-new
       new URL(trimmedUrl);
     } catch {
-      issues.push("Картинка должна быть валидным URL");
+      issues.push("Image must be a valid URL");
     }
 
     return {
@@ -46,10 +46,10 @@ export function CreateProductPage({ user }: { user: User | null }) {
       <div className="page">
         <div className="container">
           <div className="glass panelPad">
-            <div className="title">Нужна авторизация</div>
+            <div className="title">Authorization required</div>
             <div className="muted" style={{ marginTop: 8 }}>
               <Link className="btn btnPrimary" to="/login">
-                Войти
+                Sign in
               </Link>
             </div>
           </div>
@@ -63,13 +63,13 @@ export function CreateProductPage({ user }: { user: User | null }) {
       <div className="page">
         <div className="container">
           <div className="glass panelPad">
-            <div className="title">Недоступно</div>
+            <div className="title">Unavailable</div>
             <div className="muted" style={{ marginTop: 8 }}>
-              Создание продукта доступно только пользователю с `is_entrepreneur=true`.
+              Product creation is available only for users with `is_entrepreneur=true`.
             </div>
             <div className="muted" style={{ marginTop: 12 }}>
               <Link className="btn" to="/">
-                На главную
+                Back to home
               </Link>
             </div>
           </div>
@@ -84,7 +84,7 @@ export function CreateProductPage({ user }: { user: User | null }) {
         <div className="twoCol">
           <div className="glass panelPad">
             <div className="title" style={{ fontSize: 18 }}>
-              Новый товар
+              New product
             </div>
             <div className="muted" style={{ marginTop: 8 }}>
               POST `/products/create` (cookies auth).
@@ -95,13 +95,13 @@ export function CreateProductPage({ user }: { user: User | null }) {
               onSubmit={async (e) => {
                 e.preventDefault();
                 if (!validation.ok) {
-                  toast.push({ kind: "error", title: "Проверь поля", message: validation.issues.join("; ") });
+                  toast.push({ kind: "error", title: "Check fields", message: validation.issues.join("; ") });
                   return;
                 }
                 try {
                   setLoading(true);
                   const p = await api.products.create(validation.payload);
-                  toast.push({ kind: "ok", title: "Товар создан", message: p.name });
+                  toast.push({ kind: "ok", title: "Product created", message: p.name });
                   if (p.id) {
                     nav(`/product/${p.id}`);
                   } else {
@@ -110,8 +110,8 @@ export function CreateProductPage({ user }: { user: User | null }) {
                 } catch (err) {
                   toast.push({
                     kind: "error",
-                    title: "Не удалось создать",
-                    message: isApiError(err) ? err.message : "Ошибка сети"
+                    title: "Create failed",
+                    message: isApiError(err) ? err.message : "Network error"
                   });
                 } finally {
                   setLoading(false);
@@ -121,18 +121,18 @@ export function CreateProductPage({ user }: { user: User | null }) {
             >
               <label style={{ display: "grid", gap: 8 }}>
                 <span className="muted2" style={{ fontSize: 12 }}>
-                  Название
+                  Name
                 </span>
                 <input
                   className="input"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  placeholder="Например: Наушники Pro Max"
+                  placeholder="Example: Pro Max Headphones"
                 />
               </label>
               <label style={{ display: "grid", gap: 8 }}>
                 <span className="muted2" style={{ fontSize: 12 }}>
-                  Описание
+                  Description
                 </span>
                 <textarea
                   value={description}
@@ -146,13 +146,13 @@ export function CreateProductPage({ user }: { user: User | null }) {
                     background: "rgba(0,0,0,0.18)",
                     color: "var(--text)"
                   }}
-                  placeholder="Коротко и по делу, как на маркетплейсе…"
+                  placeholder="Short and clear product description..."
                 />
               </label>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
                 <label style={{ display: "grid", gap: 8 }}>
                   <span className="muted2" style={{ fontSize: 12 }}>
-                    Цена (RUB)
+                    Price (USD)
                   </span>
                   <input
                     className="input"
@@ -163,7 +163,7 @@ export function CreateProductPage({ user }: { user: User | null }) {
                 </label>
                 <label style={{ display: "grid", gap: 8 }}>
                   <span className="muted2" style={{ fontSize: 12 }}>
-                    Картинка URL
+                    Image URL
                   </span>
                   <input className="input" value={imageUrl} onChange={(e) => setImageUrl(e.target.value)} />
                 </label>
@@ -181,40 +181,40 @@ export function CreateProductPage({ user }: { user: User | null }) {
                   className="badge"
                   style={{ borderColor: "rgba(34, 197, 94, 0.30)", color: "rgba(255,255,255,0.82)" }}
                 >
-                  Готово к созданию
+                  Ready to create
                 </div>
               )}
 
               <button className="btn btnPrimary" type="submit" disabled={loading || !validation.ok}>
-                {loading ? "Создаём…" : "Создать"}
+                {loading ? "Creating..." : "Create"}
               </button>
               <Link className="btn" to="/">
-                Отмена
+                Cancel
               </Link>
             </form>
           </div>
 
           <div className="glass panelPad">
-            <div className="title">Превью</div>
+            <div className="title">Preview</div>
             <div className="muted" style={{ marginTop: 8 }}>
-              Как это будет выглядеть в карточке.
+              How this item will look in the product card.
             </div>
             <div className="hr" />
             <div className="card">
               <img className="cardImg" style={{ height: 240 }} src={imageUrl} alt="preview" />
               <div className="cardBody">
                 <div className="title" style={{ fontSize: 14 }}>
-                  {name || "Название товара"}
+                  {name || "Product name"}
                 </div>
                 <div className="muted2" style={{ marginTop: 8, fontSize: 12, lineHeight: 1.45 }}>
-                  {description || "Описание товара…"}
+                  {description || "Product description..."}
                 </div>
                 <div style={{ marginTop: 12, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                   <span className="badge">seller: {user.id}</span>
                   <span className="price">
-                    {new Intl.NumberFormat("ru-RU", {
+                    {new Intl.NumberFormat("en-US", {
                       style: "currency",
-                      currency: "RUB",
+                      currency: "USD",
                       maximumFractionDigits: 0
                     }).format(price || 0)}
                   </span>
