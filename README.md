@@ -1,71 +1,63 @@
-# Amazon Clone API
+# FastAPI Shop API
 
-Modern e-commerce API built with FastAPI, PostgreSQL, and JWT authentication.
+A backend API for an e-commerce app built with FastAPI, PostgreSQL, SQLAlchemy, and JWT-based auth.
+
+## What This Project Includes
+
+- User registration, login, and current-user endpoints
+- Product creation and product listing with `limit` + `offset` pagination
+- Alembic migrations for schema management
+- `uv`-based dependency and environment workflow
+- Docker and Docker Compose setup for local containerized development
 
 ## Tech Stack
 
-- **Python 3.14** — Programming language
-- **FastAPI** — Web framework
-- **SQLAlchemy 2.0** — Async ORM
-- **PostgreSQL** — Database
-- **AuthX** — JWT authentication
-- **Argon2** — Password hashing
+- Python 3.14
+- FastAPI + Uvicorn
+- SQLAlchemy 2.x + Alembic
+- PostgreSQL
+- AuthX + Passlib
+- uv
 
 ## Project Structure
 
-```
-amazone-clone/
-├── src/
-│   ├── api.py              # Router aggregation
-│   ├── auth/              # Authentication & users
-│   │   ├── depends.py     # FastAPI dependencies
-│   │   ├── models.py     # SQLAlchemy models
-│   │   ├── repo.py      # Repository (DB queries)
-│   │   ├── router.py    # API endpoints
-│   │   ├── schemas.py   # Pydantic schemas
-│   │   └── services.py  # Business logic
-│   ├── core/            # Configuration & security
-│   │   ├── config.py   # Settings
-│   │   └── security.py # Hashing, JWT
-│   ├── db/              # Database
-│   │   ├── config.py   # DB configuration
-│   │   ├── database.py # SQLAlchemy engines
-│   │   └── router.py  # DB initialization
-│   └── jwt/             # JWT tokens
-│       ├── depends.py  # Token dependencies
-│       ├── models.py  # Token models
-│       ├── repo.py   # Token repository
-│       ├── schemas.py # Token schemas
-│       └── service.py # Token creation
-├── main.py              # Entry point
-└── pyproject.toml     # Dependencies
+```text
+.
+|-- main.py
+|-- pyproject.toml
+|-- alembic.ini
+|-- src/
+|   |-- api.py
+|   |-- auth/
+|   |-- products/
+|   |-- db/
+|   |-- migrations/
+|   |-- jwt/
+|   |-- cart/
+|   `-- orders/
+|-- Dockerfile
+`-- docker-compose.yml
 ```
 
-## Quick Start
+## Environment Variables
 
-### 1. Installation
+Create your env file from the template:
 
 ```bash
-# Install dependencies
-pip install -e .
+cp .env.example .env
+# PowerShell: Copy-Item .env.example .env
 ```
 
-### 2. Environment Variables
+Then update values in `.env` (same level as `pyproject.toml`):
 
-Create `.env` in `src/db/`:
-
-```
+```env
 DB_HOST=localhost
 DB_PORT=5432
 DB_USER=postgres
 DB_PASS=postgres
-DB_NAME=shop-db
-```
+DB_NAME=shop_db
 
-Create `.env` in `src/core/`:
-
-```
-JWT_SECRET_KEY=your-secret-key-at-least-32-characters
+JWT_SECRET_KEY=change-me-to-a-long-random-secret
 JWT_ALGORITHM=HS256
 JWT_REFRESH_EXPIRATION_DELTA=120
 JWT_ACCESS_EXPIRATION_DELTA=7
@@ -75,201 +67,59 @@ JWT_REFRESH_COOKIE_NAME=refresh_token
 HASH_SCHEME=argon2
 ```
 
-### 3. Run the Server
+Important: if `.env` is missing, commands like `uv run alembic upgrade head` fail with `DbSettings` validation errors for `DB_HOST`, `DB_PORT`, etc.
+
+## Local Setup (uv)
+
+1. Install dependencies:
 
 ```bash
-# Using uvicorn
-uvicorn main:app --reload
-
-# Or using Python
-python main.py
+uv sync
 ```
 
-Server starts at `http://localhost:8000`
-
-## API Endpoints
-
-### Initialize Database
-
-```http
-POST /init-db/
-```
-
-Creates all tables in the database.
-
-### Register
-
-```http
-POST /auth/reg
-Content-Type: application/json
-
-{
-    "email": "user@example.com",
-    "password": "securepassword",
-    "first_name": "John",
-    "last_name": "Doe",
-    "is_entrepreneur": false,
-    "in_club": false
-}
-```
-
-### Login
-
-```http
-POST /auth/login
-Content-Type: application/json
-
-{
-    "email": "user@example.com",
-    "password": "securepassword"
-}
-```
-
-Response:
-```json
-{
-    "access_token": "eyJ...",
-    "refresh_token": "eyJ..."
-}
-```
-
-Tokens are automatically set in cookies.
-
-### Get Current User
-
-```http
-GET /auth/me
-```
-
-Requires authentication (token in cookies).
-
-Response:
-```json
-{
-    "id": 1,
-    "email": "user@example.com",
-    "first_name": "John",
-    "last_name": "Doe",
-    "in_club": false,
-    "is_entrepreneur": false
-}
-```
-
-## Architecture
-
-### Repository + Service Pattern
-
-```
-Router → Service → Repository → Database
-  ↓         ↓          ↓
-Depends  Business   SQLAlchemy
-         Logic      Queries
-```
-
-### Dependency Injection
-
-FastAPI manages dependencies via `Depends()`:
-
-```python
-async def get_auth_service(
-    repo: UsersRepository = Depends(get_users_repository),
-    jwt_service: JWTService = Depends(get_jwt_service)
-):
-    return AuthService(repo, jwt_service)
-```
-
-### Async Database
-
-All DB operations use async/await:
-
-```python
-async def add_user(self, user_data):
-    async with self.session() as session:
-        stmt = insert(User).values(...)
-        await session.execute(stmt)
-        await session.commit()
-```
-
-## Security Configuration
-
-### Password Hashing
-
-Uses Argon2 — modern and secure:
-
-```python
-from src.core.security import hash_password, verify_password
-
-hashed = hash_password("password123")
-verify_password("password123", hashed)  # True
-```
-
-### JWT Tokens
-
-- **Access token** — short-term authentication (7 minutes default)
-- **Refresh token** — refresh access token (120 days default)
-
-Tokens stored in cookies with `HttpOnly`, `Secure` and `SameSite` flags.
-
-## Testing
+2. Run migrations:
 
 ```bash
-# Run all tests
-pytest
-
-# Run specific file
-pytest tests/test_auth.py
+uv run alembic upgrade head
 ```
 
-## Useful Commands
+3. Start the API:
 
 ```bash
-# Create migration (if using Alembic)
-alembic revision --autogenerate -m "add_users_table"
-
-# Apply migrations
-alembic upgrade head
-
-# Rollback migration
-alembic downgrade -1
-
-# Open REPL
-python -c "import src.api; print(src.api.app)"
+uv run uvicorn main:app --reload
 ```
 
-## Environment Variables
+API will be available at:
 
-### db/.env
+- `http://127.0.0.1:8000`
+- Swagger docs: `http://127.0.0.1:8000/docs`
 
-| Variable | Description | Default |
-|----------|-------------|---------|
-| DB_HOST | PostgreSQL host | localhost |
-| DB_PORT | PostgreSQL port | 5432 |
-| DB_USER | Database user | postgres |
-| DB_PASS | Database password | postgres |
-| DB_NAME | Database name | shop-db |
+## Docker Setup
 
-### core/.env
+1. Build and start everything:
 
-| Variable | Description | Default |
-|----------|-------------|---------|
-| JWT_SECRET_KEY | Secret key for token signing | - |
-| JWT_ALGORITHM | Signing algorithm | HS256 |
-| JWT_REFRESH_EXPIRATION_DELTA | Days for refresh token | 120 |
-| JWT_ACCESS_EXPIRATION_DELTA | Minutes for access token | 7 |
-| JWT_TOKEN_LOCATION | Where to store token | cookies |
-| JWT_ACCESS_COOKIE_NAME | Access cookie name | access_token |
-| JWT_REFRESH_COOKIE_NAME | Refresh cookie name | refresh_token |
-| HASH_SCHEME | Hashing algorithm | argon2 |
+```bash
+docker compose up --build
+```
 
-## Production Recommendations
+2. Stop containers:
 
-1. **Change JWT_SECRET_KEY** to random string (min 32 characters)
-2. **HTTPS** is required in production
-3. **Configure cookie flags**: `Secure=True`, `SameSite=Lax`
-4. **Use connection pooling** for PostgreSQL
-5. **Add logging** and monitoring
-6. **Rate limiting** to protect against brute force
+```bash
+docker compose down
+```
 
-## License
+3. Stop and remove database volume:
 
-MIT License
+```bash
+docker compose down -v
+```
+
+The API container runs migrations before starting Uvicorn.
+
+## Common Commands
+
+```bash
+uv run alembic revision --autogenerate -m "describe-change"
+uv run alembic upgrade head
+uv run alembic downgrade -1
+```
