@@ -1,7 +1,10 @@
+from itertools import product
+from os import name
+
 from src.auth.models import UsersOrm
 
 from .repo import ProductsRepository
-from .schemas import CreateProductFormSchema, CreateProductDbSchema
+from .schemas import CreateProductFormSchema, CreateProductDbSchema, ProductRead
 import uuid
 from fastapi import HTTPException, status
 from .models import ProductsOrm
@@ -31,10 +34,36 @@ class ProductsService:
         else:
             return None
 
+    async def products_by_search(self, search_term: str, limit: int) -> list[ProductRead]:
+        products = await self.repo.search_products(search_term, limit)
+        products_read = (
+            [ProductRead(
+                id=i.id,
+                image_url=i.image_url,
+                name=i.name,
+                description=i.description,
+                price=i.price
+            ) for i in products]
+        )
+        return products_read
+
     async def get_all_products(self, limit: int, offset: int):
-        return await self.repo.list_products(limit=limit, offset=offset)
+        products = [ProductRead(
+            id=i.id,
+            price=i.price,
+            name=i.name,
+            description=i.description,
+            image_url=i.image_url
+        ) for i in await self.repo.list_products(limit, offset)]
+        return products
 
-    async def get_product_by_id(self, product_id: int) -> ProductsOrm | None:
+    async def get_product_by_id(self, product_id: int) -> ProductRead | None:
         product = await self.repo._get_product_or_404(product_id)
-
-        return product
+        read_product = ProductRead(
+            id=product.id,
+            name=product.name,
+            description=product.description,
+            price=product.price,
+            image_url=product.image_url
+        )
+        return read_product

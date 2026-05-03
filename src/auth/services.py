@@ -1,7 +1,8 @@
 from authx import TokenPayload
 from fastapi import Response
+from sqlalchemy.exc import IntegrityError
 
-from .schemas import UserRegFormSchema, AddUserSchema, UserLoginFormSchema, TokensSchema
+from .schemas import UserRegFormSchema, AddUserSchema, UserLoginFormSchema, TokensSchema, TopUpUserBalance
 from .repo import UsersRepository
 from src.core.security import hash_password, verify_password
 from src.jwt.service import JWTService
@@ -23,8 +24,10 @@ class AuthService:
             is_entrepreneur = user_credentials.is_entrepreneur,
             in_club = user_credentials.in_club
         )
-
-        user = await self.users_repo.add_user(user_db_data)
+        try:
+            user = await self.users_repo.add_user(user_db_data)
+        except IntegrityError:
+            return None
         return user
 
     async def login_user(self, user_credentials: UserLoginFormSchema):
@@ -51,6 +54,25 @@ class AuthService:
             return None
 
 
+    async def new_access_token(self, payload):
+        user = await self.users_repo.get_user_by_id(user_id=int(payload.sub))
+        if user:
+            access_token_data = AccessTokenDataSchema(
+                in_club=user.in_club,
+                is_entrepreneur=user.is_entrepreneur
+            )
+            access_token = await self.jwt_service.create_access_token(data=access_token_data, user_id=user.id)
+            return access_token
+        else:
+            return None
+
+    async def top_up_user_balance(self, payload: TokenPayload, credentials: TopUpUserBalance):
+        user_id = int(payload.sub)
+        new_balance = await self.users_repo.top_up_balance(user_id=user_id, amount=credentials.amount)
+        if new_balance:
+            return new_balance
+        else:
+            return None
 
 
 
